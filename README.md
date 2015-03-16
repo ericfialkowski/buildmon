@@ -1,2 +1,3 @@
-# buildmon
-LED feedback for the status of a jenkins build
+#buildmon
+
+Yet another LED build indicator for Jenkins builds.
