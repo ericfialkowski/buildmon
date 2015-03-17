@@ -2,13 +2,18 @@ package mon;
 
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 
+/**
+ * Simple class to send the byte commands to the arduino
+ * 
+ * @author ericfialkowski
+ */
 public class Sender
 {
-
     public static void main(String[] args) throws IOException, InterruptedException
     {
         if (args.length != 1)
@@ -25,19 +30,20 @@ public class Sender
         SerialPort serialPort = new SerialPort(args[0]);
         try
         {
-            serialPort.openPort();//Open serial port
+            serialPort.openPort();
+            // we don't need to send data at a high rate.
             serialPort.setParams(SerialPort.BAUDRATE_9600,
                                  SerialPort.DATABITS_8,
                                  SerialPort.STOPBITS_1,
-                                 SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);			            
-            //Thread.sleep(2000);
+                                 SerialPort.PARITY_NONE);
+
             boolean stillWaiting = true;
-			int waitCount = 5;
+            int waitCount = 5;
             do
-            {				
+            {                
                 byte rx[] = serialPort.readBytes();
-                if ( rx != null)
-				{
+                if (rx != null)
+                {
                     for (byte b : rx)
                     {
                         if (b == 125)
@@ -45,31 +51,27 @@ public class Sender
                             stillWaiting = false;
                         }
                     }
-				}
-				else
-				{
-					if ( --waitCount > 0)
-					{
-						Thread.sleep(1000);
-					}
-				}
+                }
+                else
+                {
+                    if (--waitCount > 0)
+                    {
+                        TimeUnit.SECONDS.sleep(1);
+                    }
+                }
             }
             while (stillWaiting && waitCount > 0);
-
             
             System.out.println("Enter data to send. Blank line to exit");
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
-            while ( line != null && line.length() > 0)
-            {                                        
-//                byte data = Byte.parseByte(line);
-//                System.out.printf("Sending %d to %s%n", data, serialPort.getPortName());                                                    
+            while (line != null && line.length() > 0)
+            {
                 serialPort.writeString(line);
                 line = scanner.nextLine();
             }
             
-            
-            serialPort.closePort();//Close serial port
+            serialPort.closePort();
         }
         catch (SerialPortException ex)
         {

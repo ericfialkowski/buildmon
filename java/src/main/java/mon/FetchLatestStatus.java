@@ -1,84 +1,99 @@
 package mon;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import javax.ws.rs.core.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-
-public class FetchLatestStatus 
+public class FetchLatestStatus
 {
-	private static final Logger LOG = Logger.getLogger(FetchLatestStatus.class);
-	private final String url;
+    private static final Logger LOG = Logger.getLogger(FetchLatestStatus.class);
+    private final String url;
 
-	public FetchLatestStatus(String host, String project)
-	{
-		this.url = String.format("http://%s/job/%s/api/xml?depth=1", host, project);
-	}
-	
-	public BuildStates getLatest()
-	{
-		BuildStates status = BuildStates.UNKNOWN;
-		Client client = Client.create();
-		WebResource webResource = client.resource(url);
+    public FetchLatestStatus(String host, String project)
+    {
+        this.url = String.format("http://%s/job/%s/api/xml?depth=1", host, project);
+    }
 
-		ClientResponse response = webResource.accept(MediaType.APPLICATION_XML_TYPE).get(ClientResponse.class);
+    public BuildStates getLatest()
+    {
+        BuildStates status = BuildStates.UNKNOWN;
+        try
+        {
 
-		if (response == null || response.getStatus() != 200)
-		{
-			return BuildStates.DEMO;
-		}
+            OkHttpClient httpClient = new OkHttpClient();
+            Request request = new Request.Builder()
+                .addHeader("Accept", "application/xml")
+                .url(url)
+                .build();
 
-		Document doc = response.getEntity(Document.class);
+            Response response = httpClient.newCall(request).execute();
 
-		NodeList nodes = doc.getElementsByTagName("build");
-		if (nodes.getLength() > 0)
-		{
-			Element recentBuild = (Element) nodes.item(0);
-			NodeList resultsNodes = recentBuild.getElementsByTagName("result");
-			Element results = (Element) resultsNodes.item(0);
-			String statusString = getCharacterDataFromElement(results).toUpperCase();
-            
-            NodeList buildingNodes = recentBuild.getElementsByTagName("building");
-			Element buildingResults = (Element) buildingNodes.item(0);
-			String buildingStatus = getCharacterDataFromElement(buildingResults);
-            if ( Boolean.parseBoolean(buildingStatus))
+            if (response == null || !response.isSuccessful())
             {
-                statusString = "BUILDING";
+                return BuildStates.DEMO;
             }
-            status = BuildStates.fromStatusMessage(statusString);
-		}
-                		
-		client.destroy();
-		return status;
-	}
 
-	private String getCharacterDataFromElement(Element e)
-	{
-		String rtn = "";
-		if ( e != null)
-		{
-			Node child = e.getFirstChild();
-			if (child instanceof CharacterData)
-			{
-				CharacterData cd = (CharacterData) child;
-				rtn = cd.getData();
-			}
-		}
-		LOG.debug("Parsed character data: " + rtn);
-		return rtn;
-	}
-	
-	public static void main(String[] args) 
-	{
-		FetchLatestStatus fetcher = new FetchLatestStatus("devbuild", "chat-stack");
-		BuildStates latest = fetcher.getLatest();
-		System.out.println(latest.getState());
-	}
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(response.body().byteStream());
+
+            NodeList nodes = doc.getElementsByTagName("build");
+            if (nodes.getLength() > 0)
+            {
+                Element recentBuild = (Element) nodes.item(0);
+                NodeList resultsNodes = recentBuild.getElementsByTagName("result");
+                Element results = (Element) resultsNodes.item(0);
+                String statusString = getCharacterDataFromElement(results).toUpperCase();
+
+                NodeList buildingNodes = recentBuild.getElementsByTagName("building");
+                Element buildingResults = (Element) buildingNodes.item(0);
+                String buildingStatus = getCharacterDataFromElement(buildingResults);
+                if (Boolean.parseBoolean(buildingStatus))
+                {
+                    statusString = "BUILDING";
+                }
+                status = BuildStates.fromStatusMessage(statusString);
+            }
+
+        }
+        catch (IOException | ParserConfigurationException | SAXException ex)
+        {
+            LOG.warn("Error getting current status", ex);
+        }
+        return status;
+    }
+
+    private String getCharacterDataFromElement(Element e)
+    {
+        String rtn = "";
+        if (e != null)
+        {
+            Node child = e.getFirstChild();
+            if (child instanceof CharacterData)
+            {
+                CharacterData cd = (CharacterData) child;
+                rtn = cd.getData();
+            }
+        }
+        LOG.debug("Parsed character data: " + rtn);
+        return rtn;
+    }
+
+    public static void main(String[] args)
+    {
+        FetchLatestStatus fetcher = new FetchLatestStatus("devbuild", "chat-stack");
+        BuildStates latest = fetcher.getLatest();
+        System.out.println(latest.getState());
+    }
 }

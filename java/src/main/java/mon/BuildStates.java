@@ -1,5 +1,11 @@
 package mon;
 
+/**
+ * The various build states that can be sent to the arduino. Not all are actual 
+ * build status returns (such as DEMO) but states that the arduino understands
+ * 
+ * @author ericfialkowski
+ */
 public enum BuildStates
 {
 
