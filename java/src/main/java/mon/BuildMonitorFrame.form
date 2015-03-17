@@ -140,14 +140,8 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="buildHostText">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="devbuild"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="projectText">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="aws-pom"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="serialPortCombobox">
       <Properties>

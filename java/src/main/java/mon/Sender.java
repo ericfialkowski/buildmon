@@ -63,14 +63,15 @@ public class Sender
             while (stillWaiting && waitCount > 0);
             
             System.out.println("Enter data to send. Blank line to exit");
-            Scanner scanner = new Scanner(System.in);
-            String line = scanner.nextLine();
-            while (line != null && line.length() > 0)
-            {
-                serialPort.writeString(line);
-                line = scanner.nextLine();
-            }
-            
+			try (Scanner scanner = new Scanner(System.in))
+			{
+				String line = scanner.nextLine();
+				while (line != null && line.length() > 0)
+				{
+					serialPort.writeString(line);
+					line = scanner.nextLine();
+				}
+			}
             serialPort.closePort();
         }
         catch (SerialPortException ex)
