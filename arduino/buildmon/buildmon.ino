@@ -28,86 +28,86 @@ int greenbrightness = 0;
 int bluebrightness = 255;
 int bluestepping = DEFAULTBLUESTEPPING;
 
-void setup()  { 
-  Serial.begin(9600);  
+void setup()  {
+  Serial.begin(9600);
   randomSeed(analogRead(0));
   pinMode(redled, OUTPUT);
   pinMode(greenled, OUTPUT);
   pinMode(blueled, OUTPUT);
-  analogWrite(redled, 0);    
+  analogWrite(redled, 0);
   analogWrite(greenled, 0);
-  analogWrite(blueled, 0);      
+  analogWrite(blueled, 0);
   Serial.write(125);
-} 
+}
 
 // the loop routine runs over and over again forever:
 void loop()  {
   //    Serial.print("State: ");
   //    Serial.println(state);
 
-  if(Serial.available() > 0)
+  if (Serial.available() > 0)
   {
     serialEvent();
   }
 
-  switch(state)
+  switch (state)
   {
-  case FAILURE:
-    red();
-    state = 200;
-    break;
-  case SUCCESS:
-    green(); 
-    //       state = 500;
-    break;
-  case BUILDING:
-    blue(); 
-    state = 100;
-    break;       
-  case WARNING:
-    yellow(); 
-    break;       
-  case UNKNOWN:
-    purple(); 
-    state = 250;
-    break;
-  case DEMO:
-    writeRGB(random(256),random(250),random(216));
-    break;  
-  case BLANK:
-    reset();
-    break;
-  case BUZZ:
-    buzz();
-    state = previous_state;
-    break;
-  case BEEP:
-    beep();
-    state = previous_state;
-    break;
-  case 100:
-    fadeblue();
-    break;      
-  case 200:
-    pulsered();
-    if (redpulses > 15)
-    {
-      state = 201;
-    }
-    break; 
-  case 201:
-    red();
-    break;         
-  case 250:
-    fadepurple();
-    break;    
+    case FAILURE:
+      red();
+      state = 200;
+      break;
+    case SUCCESS:
+      green();
+      //       state = 500;
+      break;
+    case BUILDING:
+      blue();
+      state = 100;
+      break;
+    case WARNING:
+      yellow();
+      break;
+    case UNKNOWN:
+      purple();
+      state = 250;
+      break;
+    case DEMO:
+      writeRGB(random(256), random(250), random(216));
+      break;
+    case BLANK:
+      reset();
+      break;
+    case BUZZ:
+      buzz();
+      state = previous_state;
+      break;
+    case BEEP:
+      beep();
+      state = previous_state;
+      break;
+    case 100:
+      fadeblue();
+      break;
+    case 200:
+      pulsered();
+      if (redpulses > 15)
+      {
+        state = 201;
+      }
+      break;
+    case 201:
+      red();
+      break;
+    case 250:
+      fadepurple();
+      break;
   }
   play_note();
 }
 
 void reset()
 {
-  writeRGB(0,0,0);
+  writeRGB(0, 0, 0);
 }
 
 
@@ -115,21 +115,21 @@ void serialEvent()
 {
   byte command = state;
   command = Serial.read();
-  while(Serial.available() > 0)
+  while (Serial.available() > 0)
   {
     Serial.read();
   }
 
-//  Serial.print("Sent Command: ");
-//  Serial.write(command);
-//  Serial.println();  
+  //  Serial.print("Sent Command: ");
+  //  Serial.write(command);
+  //  Serial.println();
   if (command > DEMO || command < BLANK)
   {
     command = DEMO;
   }
-//  Serial.print("Picked Command: ");
-//  Serial.write(command);
-//  Serial.println();  
+  //  Serial.print("Picked Command: ");
+  //  Serial.write(command);
+  //  Serial.println();
   previous_state = state;
   state = command;
 }
@@ -139,13 +139,13 @@ void red()
   redstepping = DEFAULTREDSTEPPING;
   redpulses = 0;
   redbrightness = 255;
-  writeRGB(255,0,0);
+  writeRGB(255, 0, 0);
 }
 
 void pulsered()
 {
-  writeRGB(redbrightness,0,0);
-  if (redbrightness <= 50 || redbrightness >=255)
+  writeRGB(redbrightness, 0, 0);
+  if (redbrightness <= 50 || redbrightness >= 255)
   {
     redstepping *= -1;
     redpulses++;
@@ -155,13 +155,13 @@ void pulsered()
 
 void green()
 {
-  writeRGB(0,255,0);
+  writeRGB(0, 255, 0);
 }
 
 void fadeblue()
 {
-  writeRGB(0,15,bluebrightness);
-  if (bluebrightness <= 25 || bluebrightness >=255)
+  writeRGB(0, 15, bluebrightness);
+  if (bluebrightness <= 25 || bluebrightness >= 255)
   {
     bluestepping *= -1;
   }
@@ -172,18 +172,18 @@ void blue()
 {
   bluestepping = DEFAULTBLUESTEPPING;
   bluebrightness = 255;
-  writeRGB(0,15,255);
+  writeRGB(0, 15, 255);
 }
 
 
 void yellow()
 {
-  writeRGB(255,100,0);
+  writeRGB(255, 100, 0);
 }
 
 void purple()
 {
-  writeRGB(255,0,155);
+  writeRGB(255, 0, 155);
   bluestepping = 25;
   bluebrightness = 155;
   redstepping = 25;
@@ -192,13 +192,13 @@ void purple()
 
 void fadepurple()
 {
-  writeRGB(redbrightness,15,bluebrightness);
-  if (bluebrightness <= 25 || bluebrightness >=155)
+  writeRGB(redbrightness, 15, bluebrightness);
+  if (bluebrightness <= 25 || bluebrightness >= 155)
   {
     bluestepping *= -1;
   }
   bluebrightness += bluestepping;
-  if (redbrightness <= 150 || redbrightness >=255)
+  if (redbrightness <= 150 || redbrightness >= 255)
   {
     redstepping *= -1;
   }
@@ -208,19 +208,19 @@ void fadepurple()
 
 void writeRed(int r)
 {
-  analogWrite(redled, r);    
+  analogWrite(redled, r);
   //  redbrightness = r;
 }
 
 void writeGreen(int g)
 {
-  analogWrite(greenled, g);  
+  analogWrite(greenled, g);
   //  greenbrightness = g;
 }
 
 void writeBlue(int b)
 {
-  analogWrite(blueled, b);    
+  analogWrite(blueled, b);
   //  bluebrightness = b;
 }
 
