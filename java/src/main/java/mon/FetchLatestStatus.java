@@ -1,9 +1,7 @@
 package mon;
 
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import java.io.IOException;
+import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,23 +28,10 @@ public class FetchLatestStatus
         BuildStates status = BuildStates.UNKNOWN;
         try
         {
-
-            OkHttpClient httpClient = new OkHttpClient();
-            Request request = new Request.Builder()
-                .addHeader("Accept", "application/xml")
-                .url(url)
-                .build();
-
-            Response response = httpClient.newCall(request).execute();
-
-            if (response == null || !response.isSuccessful())
-            {
-                return BuildStates.DEMO;
-            }
-
+			URL devHost = new URL(url);			
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(response.body().byteStream());
+            Document doc = dBuilder.parse(devHost.openStream());
 
             NodeList nodes = doc.getElementsByTagName("build");
             if (nodes.getLength() > 0)
