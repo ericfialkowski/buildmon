@@ -1,5 +1,6 @@
 package mon;
 
+import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -11,7 +12,7 @@ public class App
 
     private static final Logger LOG = Logger.getLogger(App.class);
 
-    public static void main(String[] args) throws SerialPortException
+    public static void main(String[] args) throws SerialPortException, MalformedURLException
     {
         int delay = 30;
 
@@ -44,24 +45,20 @@ public class App
                              SerialPort.DATABITS_8,
                              SerialPort.STOPBITS_1,
                              SerialPort.PARITY_NONE);
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                if (serialPort.isOpened())
-                {
-                    try
-                    {
-                        serialPort.closePort();
-                    }
-                    catch (SerialPortException ex)
-                    {
-                        System.out.println(ex);
-                    }
-                }
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+		{
+			if (serialPort.isOpened())
+			{
+				try
+				{
+					serialPort.closePort();
+				}
+				catch (SerialPortException ex)
+				{
+					System.out.println(ex);
+				}
+			}
+		}));
 
         BuildStates previousStatus = BuildStates.BLANK;
         boolean running = true;

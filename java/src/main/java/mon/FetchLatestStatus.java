@@ -1,6 +1,7 @@
 package mon;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,11 +17,11 @@ import org.xml.sax.SAXException;
 public class FetchLatestStatus
 {
     private static final Logger LOG = Logger.getLogger(FetchLatestStatus.class);
-    private final String url;
+    private final URL url;
 
-    public FetchLatestStatus(String host, String project)
+    public FetchLatestStatus(String host, String project) throws MalformedURLException
     {
-        this.url = String.format("http://%s/job/%s/api/xml?depth=1", host, project);
+        this.url = new URL(String.format("http://%s/job/%s/api/xml?depth=1", host, project));
     }
 
     public BuildStates getLatest()
@@ -28,10 +29,9 @@ public class FetchLatestStatus
         BuildStates status = BuildStates.UNKNOWN;
         try
         {
-			URL devHost = new URL(url);			
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(devHost.openStream());
+            Document doc = dBuilder.parse(url.openStream());
 
             NodeList nodes = doc.getElementsByTagName("build");
             if (nodes.getLength() > 0)
@@ -75,7 +75,7 @@ public class FetchLatestStatus
         return rtn;
     }
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws MalformedURLException
     {
         FetchLatestStatus fetcher = new FetchLatestStatus("devbuild", "chat-stack");
         BuildStates latest = fetcher.getLatest();
