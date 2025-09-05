@@ -6,7 +6,9 @@ import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -16,7 +18,7 @@ import org.xml.sax.SAXException;
 
 public class FetchLatestStatus
 {
-    private static final Logger LOG = Logger.getLogger(FetchLatestStatus.class);
+    private static final Logger LOG = LogManager.getLogger(FetchLatestStatus.class);
     private final URL url;
 
     public FetchLatestStatus(String host, String project) throws MalformedURLException
